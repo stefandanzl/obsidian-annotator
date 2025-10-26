@@ -5,28 +5,29 @@ import path from 'path';
 import minify from 'minify';
 import MagicString from 'magic-string';
 
-const importSuffix = "!zipStringEncoded"; 
+const importSuffix = "!zipStringEncoded";
 const stringMap = new Map();
 let counter = 0;
 
 export default function zipStringEncoded() {
   return {
     name: 'zip-string-encoded', // this name will show up in warnings and errors
-    resolveId ( source ) {
+    resolveId(source) {
       if (source.endsWith(importSuffix)) {
         return source; // this signals that rollup should not ask other plugins or check the file system to find this id
       }
       return null; // other ids should be handled as usually
     },
-    async load ( id ) {
+    async load(id) {
       if (id.endsWith(importSuffix)) {
         const folder = id.substr(0, id.length - importSuffix.length);
         const zip = await getZipOfFolder(folder);
-        const theString = await zip.generateAsync({type: "string", compression: "DEFLATE", compressionOptions: {level: 9}});
+        const theString = await zip.generateAsync({ type: "string", compression: "DEFLATE", compressionOptions: { level: 9 } });
         const placeholder = `rollupZipStringEncodedNo${counter}`;
         const replacementCode = theString.replaceAll("*", "* ");
         stringMap.set(placeholder, replacementCode);
-        return `const a = function(){/*@preserve${placeholder}*/};const s=a.toString();const s2 = s.substring(22,s.length-3); const res= s2.replaceAll("* ", "*"); export default res;`; // the source code for "virtual-module"
+        // the source code for "virtual-module"
+        return `const a = function(){/*@preserve${placeholder}*/};const s=a.toString();const s2 = s.substring(22,s.length-3); const res= s2.replaceAll("* ", "*"); export default res;`;
       }
       return null; // other ids should be handled as usually
     },
@@ -46,7 +47,7 @@ export default function zipStringEncoded() {
           magicString.overwrite(start, end, replacementCode);
         }
       }
-      return {code: magicString.toString(), map: magicString.generateMap({ hires: true })};
+      return { code: magicString.toString(), map: magicString.generateMap({ hires: true }) };
     }
   };
 }
@@ -90,18 +91,18 @@ const getZipOfFolder = async (dir) => {
   for (let filePath of allPaths) {
     let addPath = slash(path.relative(dir, filePath)); // use this instead if you don't want the source folder itself in the zip
     let ext = filePath.split('.').pop().trim();
-    
+
     let data;
-    if(compressibleFormats.has(ext)) {
+    if (compressibleFormats.has(ext)) {
       try {
-          console.log("minifying ", filePath)
-          data = await minify(filePath)
-      } catch(e) {
-          
+        console.log("minifying ", filePath)
+        data = await minify(filePath)
+      } catch (e) {
+
         console.log("Minification Failed for ", filePath)
       }
     }
-    if(!data) {
+    if (!data) {
       data = fs.readFileSync(filePath);
     }
 
@@ -125,12 +126,12 @@ const getZipOfFolder = async (dir) => {
 };
 
 function slash(path) {
-	const isExtendedLengthPath = /^\\\\\?\\/.test(path);
-	const hasNonAscii = /[^\u0000-\u0080]+/.test(path); // eslint-disable-line no-control-regex
+  const isExtendedLengthPath = /^\\\\\?\\/.test(path);
+  const hasNonAscii = /[^\u0000-\u0080]+/.test(path); // eslint-disable-line no-control-regex
 
-	if (isExtendedLengthPath || hasNonAscii) {
-		return path;
-	}
+  if (isExtendedLengthPath || hasNonAscii) {
+    return path;
+  }
 
-	return path.replace(/\\/g, '/');
+  return path.replace(/\\/g, '/');
 }

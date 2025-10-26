@@ -1,5 +1,3 @@
-import cheerio from 'cheerio';
-
 type YoutubeMetaData = {
     title: string;
     description: string;
@@ -29,13 +27,16 @@ export default function getYouTubeMetaData(
     return new Promise(async (ok, erro) => {
         if (/((http|https):\/\/)?(www\.)?((youtube\.com)|(youtu\.be))(\/)?([a-zA-Z0-9\-\.]+)\/?/.test(youtube)) {
             try {
-                const body = await (await fetchFunc(youtube)).text(),
-                    $ = cheerio.load(body),
-                    title = $(`meta[name="title"]`).attr('content'),
-                    description = $(`meta[name="description"]`).attr('content'),
-                    keywords = $(`meta[name="keywords"]`).attr('content'),
-                    shortlinkUrl = $(`link[rel="shortlinkUrl"]`).attr('href'),
-                    ur = $(`link[type="application/json+oembed"]`).attr('href');
+                const body = await (await fetchFunc(youtube)).text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(body, 'text/html');
+
+                const title = doc.querySelector('meta[name="title"]')?.getAttribute('content');
+                const description = doc.querySelector('meta[name="description"]')?.getAttribute('content');
+                const keywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content');
+                const shortlinkUrl = doc.querySelector('link[rel="shortlinkUrl"]')?.getAttribute('href');
+                const ur = doc.querySelector('link[type="application/json+oembed"]')?.getAttribute('href');
+
                 const iem = ur && ur != '' ? await (await fetchFunc(ur.replace('http:', 'https:'))).text() : undefined;
                 const embedinfo = ur ? (iem ? JSON.parse(iem) : null) : null;
                 ok({ title, description, keywords, shortlinkUrl, embedinfo });

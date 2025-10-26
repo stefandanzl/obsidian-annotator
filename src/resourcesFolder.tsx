@@ -1,11 +1,50 @@
 import JSZip from 'jszip';
 
 import { get_url_extension } from './utils';
-import mime from 'mime';
 
 export const resourcesZip = new JSZip();
 export const resourceUrls = new Map<string, string>();
 export const resourceUrlToPlainText = new Map<string, string>();
+
+// Browser-safe MIME type lookup (replaces 'mime' package)
+function getMimeType(extension: string): string {
+    const ext = extension?.toLowerCase().replace(/^\./, '');
+    const mimeTypes: Record<string, string> = {
+        // Text
+        'txt': 'text/plain',
+        'html': 'text/html',
+        'htm': 'text/html',
+        'css': 'text/css',
+        'js': 'text/javascript',
+        'json': 'application/json',
+        'xml': 'application/xml',
+        'md': 'text/markdown',
+        // Images
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'svg': 'image/svg+xml',
+        'webp': 'image/webp',
+        'ico': 'image/x-icon',
+        'bmp': 'image/bmp',
+        // Documents
+        'pdf': 'application/pdf',
+        'epub': 'application/epub+zip',
+        // Fonts
+        'woff': 'font/woff',
+        'woff2': 'font/woff2',
+        'ttf': 'font/ttf',
+        'otf': 'font/otf',
+        // Archives
+        'zip': 'application/zip',
+        // Media
+        'mp3': 'audio/mpeg',
+        'mp4': 'video/mp4',
+        'webm': 'video/webm',
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+}
 
 function bufferToBlobUrl(buffer: ArrayBuffer, type: string) {
     const blob = new Blob([buffer], { type });
@@ -18,7 +57,7 @@ async function _loadResourcesZip(zipObject: JSZip | Promise<JSZip>): Promise<JSZ
         const file = zip.file(filePath);
         if (!file || file.dir) continue;
         const buf = await file.async('arraybuffer');
-        const type = mime.getType(get_url_extension(filePath));
+        const type = getMimeType(get_url_extension(filePath));
         const url = bufferToBlobUrl(buf, type);
         resourceUrls.set(filePath, url);
 

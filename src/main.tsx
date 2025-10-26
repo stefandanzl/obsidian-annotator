@@ -338,6 +338,7 @@ export default class AnnotatorPlugin extends Plugin implements IHasAnnotatorSett
                             self.pdfAnnotatorFileModes[this.id || state.state.file] !== 'markdown' &&
                             self.settings.annotationMarkdownSettings.annotationModeByDefault === true
                         ) {
+                            //@ts-ignore
                             const file = self.app.vault.getAbstractFileByPath(state.state.file);
 
                             if (file instanceof TFile && self.getPropertyValue(ANNOTATION_TARGET_PROPERTY, file)) {
@@ -345,7 +346,7 @@ export default class AnnotatorPlugin extends Plugin implements IHasAnnotatorSett
                                     ...state,
                                     type: VIEW_TYPE_PDF_ANNOTATOR
                                 };
-
+                                //@ts-ignore
                                 self.pdfAnnotatorFileModes[state.state.file] = VIEW_TYPE_PDF_ANNOTATOR;
 
                                 return next.apply(this, [newState, ...rest]);
