@@ -107,6 +107,18 @@ export default class AnnotatorPlugin extends Plugin implements IHasAnnotatorSett
 
         this.registerEditorExtension(this.getDropExtension());
 
+        // Intercept Ctrl+P in annotator view and manually trigger command palette
+        this.registerDomEvent(document, 'keydown', (evt: KeyboardEvent) => {
+            const activeView = this.app.workspace.getActiveViewOfType(AnnotatorView);
+            if (activeView && (evt.ctrlKey || evt.metaKey) && evt.key === 'p') {
+                evt.preventDefault();
+                evt.stopPropagation();
+                // Manually trigger Obsidian's command palette
+                (this.app as any).commands.executeCommandById('command-palette:open');
+                return false;
+            }
+        }, { capture: true });
+
         this.addCommand({
             id: 'toggle-annotation-mode',
             name: 'Toggle Annotation/Markdown Mode',

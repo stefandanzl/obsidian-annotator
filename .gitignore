@@ -16,3 +16,4 @@ main.js
 data.json
 .vault_plugin_dir
 resources/cdn.hypothes.is/hypothesis/build
+*meta.json

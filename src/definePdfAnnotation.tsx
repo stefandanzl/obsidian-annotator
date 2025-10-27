@@ -85,6 +85,7 @@ export default (vault: Vault, plugin: AnnotatorPlugin) => {
                         container.scrollTop += dy * (pinchScale - 1);
                         reset();
                     });
+
                     await onload(iframe);
                 }}
             />

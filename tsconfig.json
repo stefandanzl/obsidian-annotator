@@ -8,7 +8,7 @@
     "allowJs": true,
     "noImplicitAny": false,
     "moduleResolution": "node",
-    "esModuleInterop":true,
+    "esModuleInterop": true,
     "importHelpers": true,
     "noEmit": true,
     "allowSyntheticDefaultImports": true,
@@ -23,6 +23,7 @@
     "jsx": "react",
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx"]
+    "src/*.ts",
+    "src/*.tsx"
+  ]
 }

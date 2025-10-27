@@ -61,7 +61,10 @@ export default {
   plugins: [
     typescript(),
     json(),
-    nodeResolve({ browser: true }),
+    nodeResolve({
+      browser: true,
+      rootDir: "src"
+    }),
     replace({
       'process.env.NODE_ENV': JSON.stringify('production'),
       preventAssignment: true
@@ -86,6 +89,14 @@ export default {
       },
     }),
     folderZipString(),
-    analyze({ summaryOnly: true })
+    analyze({
+      summaryOnly: false,       // include detailed info
+      limit: 0,                 // include all modules
+      filter: null,             // include everything
+      writeTo: (analysis) => {
+        // 'analysis' is a string by default, but you can write JSON
+        fs.writeFileSync('rollup-bundle-meta.json', analysis);
+      }
+    })
   ]
 };
